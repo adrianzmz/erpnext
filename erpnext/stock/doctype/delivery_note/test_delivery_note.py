@@ -1259,6 +1259,19 @@ class TestDeliveryNote(ERPNextTestSuite):
 		for _i, gle in enumerate(gl_entries):
 			self.assertEqual(expected_values[gle.account]["cost_center"], gle.cost_center)
 
+	def test_sales_return_preserves_delivery_note_item_cost_center(self):
+		from erpnext.stock.doctype.delivery_note.mapper import make_sales_return
+
+		cost_center = "_Test Sales Return Cost Center - _TC"
+		create_cost_center(cost_center_name="_Test Sales Return Cost Center", company="_Test Company")
+
+		self.assertNotEqual(frappe.get_cached_value("Company", "_Test Company", "cost_center"), cost_center)
+
+		dn = create_delivery_note(cost_center=cost_center)
+		sales_return = make_sales_return(dn.name)
+
+		self.assertEqual(sales_return.items[0].cost_center, cost_center)
+
 	def test_make_sales_invoice_from_dn_for_returned_qty(self):
 		from erpnext.selling.doctype.sales_order.mapper import make_delivery_note
 		from erpnext.stock.doctype.delivery_note.mapper import make_sales_invoice
